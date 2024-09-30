@@ -1,0 +1,258 @@
+#Question 1:
+
+from VectorSpace import VectorSpace
+
+class Vector3D(VectorSpace):
+    """Subclasse de VectorSpace para vetores no espaço tridimensional R3."""
+    _dim = 3
+
+    def __init__(self, coord):
+        if len(coord) != 3:
+            raise ValueError("Coordenadas devem ter 3 dimensões.")
+        super().__init__(self._dim, float)  # O campo é float, representando vetores reais
+        self.coord = coord
+
+    @staticmethod
+    def _builder(coord):
+        return Vector3D(coord)
+
+    def __add__(self, other_vector):
+        if len(other_vector.coord) != 3:
+            raise ValueError("Operação só é possível com vetores de dimensão 3.")
+        n_vector = [self.coord[i] + other_vector.coord[i] for i in range(3)]
+        return self._builder(n_vector)
+
+    def __sub__(self, other_vector):
+        if len(other_vector.coord) != 3:
+            raise ValueError("Operação só é possível com vetores de dimensão 3.")
+        n_vector = [self.coord[i] - other_vector.coord[i] for i in range(3)]
+        return self._builder(n_vector)
+
+    def __mul__(self, alpha):
+        n_vector = [alpha * self.coord[i] for i in range(3)]
+        return self._builder(n_vector)
+
+    def __neg__(self):
+        return self._builder([-self.coord[i] for i in range(3)])
+
+    def __abs__(self):
+        return sum(self.coord[i]**2 for i in range(3))**0.5
+
+    def iner_prod(self, other_vector):
+        if len(other_vector.coord) != 3:
+            raise ValueError("Operação só é possível com vetores de dimensão 3.")
+        return sum(self.coord[i] * other_vector.coord[i] for i in range(3))
+
+    def __eq__(self, other): #Aqui vamos verificar se as entradas correspondentes são iguais. Caso verdade, retornaremos True e, caso contrário, False. 
+        return (self.coord[0] == other.coord[0] and
+                self.coord[1] == other.coord[1] and
+                self.coord[2] == other.coord[2])
+
+    #Nos métodos abaixo, basta usar o método abs, já criado para realizar as comparações.
+    def __lt__(self, other):
+        return abs(self) < abs(other)
+
+    def __gt__(self, other):
+        return abs(self) > abs(other)
+
+    def __le__(self, other):
+        return abs(self) <= abs(other)
+
+    def __ge__(self, other):
+        return abs(self) >= abs(other)
+
+    def __str__(self):
+        return f'[{self.coord[0]:.2f}, {self.coord[1]:.2f}, {self.coord[2]:.2f}]'
+
+# Exemplo de uso:
+v1 = Vector3D([1.0, 2.0, 3.0])
+v2 = Vector3D([1.0, 2.0, 3.0])
+v3 = Vector3D([2.0, 3.0, 4.0])
+
+print(v1 == v2)  # True
+print(v1 < v3)   # True
+print(v1 <= v2)  # True
+print(v1 > v3)   # False
+print(v1 >= v2)  # True
+
+
+#Question 2:
+
+"""
+Estimativa do número de bits necessários para representar um número de ponto flutuante.
+
+Um número de ponto flutuante é representado na forma:
+
+    ±d0.d1 · · · dp-1 x β
+
+onde:
+- β ≥ 2 (base)
+- p ≥ 1 (precisão, número de dígitos significativos)
+- di ∈ {0, ..., β - 1} (dígitos da mantissa)
+- e é um número inteiro entre emin e emax (expoente mínimo e máximo)
+
+Os componentes necessários para a representação são:
+
+1. **Sinal**:
+   - Precisamos de 1 bit para representar o sinal do número (positivo ou negativo).
+
+2. **Mantissa**:
+   - A mantissa consiste em p dígitos.
+   - Cada dígito pode ter valores entre 0 e β - 1.
+   - Para representar um único dígito em base β, precisamos de:
+     log2(β) bits.
+   - Portanto, para p dígitos, precisamos de:
+     p * ⌈log2(β)⌉ bits.
+
+3. **Expoente**:
+   - O expoente e varia entre emin e emax.
+   - O número total de valores possíveis para o expoente é:
+     emax - emin + 1.
+   - Para representar essa quantidade, precisamos de:
+     ⌈log2(emax - emin + 1)⌉ bits.
+
+Assim, somando todos os componentes, temos a seguinte fórmula para o número total de bits B:
+
+    B = 1 + p * ⌈log2(β)⌉ + ⌈log2(emax - emin + 1)⌉
+
+Portanto, o número total de bits necessários para representar um número de ponto flutuante com as especificações fornecidas é dado por:
+
+    B = 1 + p * ⌈log2(β)⌉ + ⌈log2(emax - emin + 1)⌉
+
+Essa fórmula permite calcular a quantidade de bits necessária para armazenar um número de ponto flutuante em uma representação computacional.
+"""
+
+#Question 3:
+
+def calcular_epsilon_maquina():
+    epsilon = 1.0  # Começamos com 1.0
+    while (1.0 + epsilon) != 1.0:  # Continua até que a soma não altere o resultado
+        epsilon /= 2.0  # Diminui o valor de epsilon pela metade
+    return epsilon * 2.0  # O último epsilon válido é o dobro do que causou a falha
+
+# Executando a função para calcular o epsilon da máquina
+epsilon_maquina = calcular_epsilon_maquina()
+print(f"Epsilon da máquina do float padrão: {epsilon_maquina}")
+
+
+#Question 4:
+
+def calcular_epsilon_maquina_ao_redor_de_10_6():
+    epsilon = 1.0  # Começamos com 1.0
+    base = 1e6  # O valor ao redor do qual estamos calculando o epsilon
+    while (base + epsilon) != base:  # Continua até que a soma não altere o resultado
+        epsilon /= 2.0  # Diminui o valor de epsilon pela metade
+    return epsilon * 2.0  # O último epsilon válido é o dobro do que causou a falha
+
+# Calculando epsilon ao redor de 1
+epsilon_maquina_1 = calcular_epsilon_maquina()
+print(f"Epsilon da máquina do float padrão em torno de 1: {epsilon_maquina_1}")
+
+# Calculando epsilon ao redor de 10^6
+epsilon_maquina_10_6 = calcular_epsilon_maquina_ao_redor_de_10_6()
+print(f"Epsilon da máquina do float padrão em torno de 10^6: {epsilon_maquina_10_6}")
+
+"""
+# Comparação dos Resultados
+
+Após executar o código, podemos observar algumas conclusões importantes:
+
+1. **Epsilon ao redor de 1**:
+   - O epsilon da máquina será um valor relativamente pequeno, como 2^{-53} (aproximadamente 1.11 × 10^{-16}), que representa a precisão do tipo float em Python.
+
+2. **Epsilon ao redor de 10^6**:
+   - O epsilon obtido ao redor de 10^6 será o mesmo valor que o epsilon calculado em torno de 1. Embora a magnitude pareça maior, a razão entre o epsilon e o valor base é o que realmente importa. Isso demonstra que a aritmética de ponto flutuante é projetada para ser uniforme em termos de precisão relativa.
+
+# Implicações e Impacto Prático
+
+1. **Precisão Relativa**:
+   - O fato de o epsilon ser o mesmo, independentemente da magnitude do número, destaca a propriedade de precisão relativa da aritmética de ponto flutuante. Isso implica que a precisão das operações não muda, mas a quantidade absoluta que pode ser considerada "significativa" em relação ao valor muda.
+
+2. **Erro de Arredondamento**:
+   - Ao trabalhar com números grandes (como 10^6), as operações podem ser mais suscetíveis a erros de arredondamento em comparação com números próximos de zero. Isso é crucial em aplicações como simulações físicas, cálculos financeiros e algoritmos de otimização, onde a precisão é essencial.
+
+3. **Análise Numérica**:
+   - Em aplicações de análise numérica, é fundamental entender como a magnitude dos números pode afetar a precisão dos resultados. Números grandes podem esconder erros que são mais visíveis com números pequenos, tornando a análise e ajuste do modelo mais complexos.
+
+4. **Escalonamento**:
+   - Ao implementar algoritmos que envolvem operações de ponto flutuante, é importante considerar como a magnitude dos números afetará o comportamento do algoritmo e garantir que a precisão não seja perdida em operações subsequentes. Técnicas de escalonamento e normalização podem ser necessárias para lidar com essas situações.
+
+Esses aspectos são fundamentais para garantir que os cálculos em aritmética de ponto flutuante sejam precisos e eficazes em diversas aplicações práticas.
+"""
+
+#Question 5:
+
+class Medida:
+    """Classe para representar medidas em centenas de quilômetros com precisão em milímetros."""
+    
+    def __init__(self, valor_em_centenas_km):
+        self.valor_em_milimetros = valor_em_centenas_km * 10000000  # 1 centena de km = 10^7 mm
+
+    def para_centenas_km(self):
+        return self.valor_em_milimetros / 10000000  # Converte mm para centenas de km
+
+    def __add__(self, other):
+        if isinstance(other, Medida):
+            return Medida(self.para_centenas_km() + other.para_centenas_km())
+        raise ValueError("A soma só é permitida com outras instâncias de Medida.")
+
+    def __sub__(self, other):
+        if isinstance(other, Medida):
+            return Medida(self.para_centenas_km() - other.para_centenas_km())
+        raise ValueError("A subtração só é permitida com outras instâncias de Medida.")
+
+    def __mul__(self, escalar):
+        return Medida(self.para_centenas_km() * escalar)
+
+    def __truediv__(self, escalar):
+        return Medida(self.para_centenas_km() / escalar)
+
+    def __str__(self):
+        return f"{self.para_centenas_km():.6f} centenas de km"
+
+    def __repr__(self):
+        return f"Medida({self.para_centenas_km():.6f})"
+
+# Exemplo de uso:
+medida1 = Medida(1.5)  # 1.5 centenas de km
+medida2 = Medida(2.0)  # 2.0 centenas de km
+
+# Operações
+soma = medida1 + medida2
+subtracao = medida1 - medida2
+
+print(f"Soma: {soma}")  # Soma: 3.500000 centenas de km
+print(f"Subtração: {subtracao}")  # Subtração: -0.500000 centenas de km
+
+
+"""
+# Abordagem
+
+1. **Definição da Classe**: Vamos criar uma classe chamada `Medida`, que representará a medida em centenas de quilômetros, mas permitirá que o usuário insira e manipule valores em milímetros internamente.
+
+2. **Unidade Interna**: A classe armazenará o valor em milímetros, permitindo que as operações e comparações sejam feitas com a precisão desejada.
+
+3. **Conversão de Unidades**: A classe incluirá métodos para converter entre centenas de quilômetros e milímetros, permitindo que o usuário trabalhe com a unidade que preferir.
+
+4. **Operações Matemáticas**: Implementaremos operações matemáticas (adição, subtração, etc.) para permitir que os usuários manipulem instâncias da classe de maneira intuitiva.
+
+5. **Representação**: A classe deve ter uma representação em string que facilite a leitura, mostrando o valor em centenas de quilômetros, mas também permitindo que o usuário visualize a precisão em milímetros.
+
+# Implementação da Classe
+
+Abaixo está um exemplo de como essa classe poderia ser implementada. A classe `Medida` armazena os valores em milímetros, fornece métodos para conversão e sobrecarga de operadores para facilitar a manipulação.
+
+# Discussão sobre a Abordagem
+
+1. **Precisão**: Ao armazenar valores em milímetros, a classe garante que operações como adição e subtração mantenham a precisão necessária.
+
+2. **Facilidade de Uso**: Os métodos `__add__` e `__sub__` tornam a manipulação de instâncias da classe intuitiva. Os usuários podem trabalhar diretamente com medidas em centenas de quilômetros sem se preocupar com a conversão.
+
+3. **Escalabilidade**: A implementação permite que mais operações e funcionalidades sejam facilmente adicionadas, como comparação de medidas, multiplicação por escalares, etc.
+
+4. **Conversões**: O método `para_centenas_km` facilita a conversão para a unidade desejada sempre que necessário, mantendo a interface limpa.
+
+# Conclusão
+
+Essa abordagem fornece uma forma robusta de lidar com medidas em diferentes escalas e precisões, garantindo que as operações matemáticas sejam realizadas corretamente e que os usuários possam trabalhar com uma interface intuitiva. Essa classe pode ser expandida conforme necessário, dependendo das necessidades específicas do projeto.
+"""
